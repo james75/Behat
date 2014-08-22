@@ -12,9 +12,8 @@ namespace Behat\Behat\Context;
 
 use Behat\Behat\Context\Argument\ArgumentResolver;
 use Behat\Behat\Context\Initializer\ContextInitializer;
+use Behat\Testwork\Argument\ArgumentOrganiser;
 use ReflectionClass;
-use ReflectionMethod;
-use ReflectionParameter;
 
 /**
  * Instantiates contexts using registered argument resolvers and context initializers.
@@ -24,6 +23,10 @@ use ReflectionParameter;
 final class ContextFactory
 {
     /**
+     * @var ArgumentOrganiser
+     */
+    private $argumentOrganiser;
+    /**
      * @var ArgumentResolver[]
      */
     private $argumentResolvers = array();
@@ -31,6 +34,16 @@ final class ContextFactory
      * @var ContextInitializer[]
      */
     private $contextInitializers = array();
+
+    /**
+     * Initialises factory.
+     *
+     * @param ArgumentOrganiser $argumentOrganiser
+     */
+    public function __construct(ArgumentOrganiser $argumentOrganiser)
+    {
+        $this->argumentOrganiser = $argumentOrganiser;
+    }
 
     /**
      * Registers context argument resolver.
@@ -63,7 +76,7 @@ final class ContextFactory
     public function createContext($class, array $arguments = array())
     {
         $reflection = new ReflectionClass($class);
-        $arguments = $this->resolveArguments($reflection, $arguments);
+        $arguments = $this->createArguments($reflection, $arguments);
         $context = $this->createInstance($reflection, $arguments);
         $this->initializeInstance($context);
 
@@ -78,7 +91,7 @@ final class ContextFactory
      *
      * @return mixed[]
      */
-    private function resolveArguments(ReflectionClass $reflection, array $arguments)
+    private function createArguments(ReflectionClass $reflection, array $arguments)
     {
         foreach ($this->argumentResolvers as $resolver) {
             $arguments = $resolver->resolveArguments($reflection, $arguments);
@@ -88,43 +101,9 @@ final class ContextFactory
             return $arguments;
         }
 
-        return $this->orderConstructorArguments($reflection->getConstructor(), $arguments);
-    }
+        $constructor = $reflection->getConstructor();
 
-    /**
-     * Orders constructor arguments using their indexes or names.
-     *
-     * @param ReflectionMethod $constructor
-     * @param array            $arguments
-     *
-     * @return array
-     */
-    private function orderConstructorArguments(ReflectionMethod $constructor, array $arguments)
-    {
-        $realArguments = array();
-        foreach ($constructor->getParameters() as $i => $parameter) {
-            if (isset($arguments[$parameter->getName()])) {
-                $realArguments[] = $arguments[$parameter->getName()];
-            } elseif (isset($arguments[$i])) {
-                $realArguments[$i] = $arguments[$i];
-            } else {
-                $realArguments[$i] = $this->getArgumentDefault($parameter);
-            }
-        }
-
-        return $realArguments;
-    }
-
-    /**
-     * Returns default value for the argument.
-     *
-     * @param ReflectionParameter $parameter
-     *
-     * @return mixed
-     */
-    private function getArgumentDefault(ReflectionParameter $parameter)
-    {
-        return $parameter->isOptional() ? $parameter->getDefaultValue() : null;
+        return $this->argumentOrganiser->organiseArguments($constructor, $arguments);
     }
 
     /**

@@ -85,12 +85,12 @@ final class GherkinExtension implements Extension
                     ->info('Sets the gherkin parser cache folder')
                     ->defaultValue(
                         is_writable(sys_get_temp_dir())
-                            ? sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'gherkin_cache'
+                            ? sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'behat_gherkin_cache'
                             : null
                     )
                 ->end()
                 ->arrayNode('filters')
-                    ->info('Sets the gherkin filters')
+                    ->info('Sets the gherkin filters (overridable by CLI options)')
                     ->performNoDeepMerging()
                     ->defaultValue(array())
                     ->useAttributeAsKey('name')

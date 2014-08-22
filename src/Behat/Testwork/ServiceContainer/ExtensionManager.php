@@ -120,11 +120,12 @@ final class ExtensionManager
      *
      * @return string
      */
-    protected function getFullExtensionClass($locator)
+    private function getFullExtensionClass($locator)
     {
         $parts = explode('\\', $locator);
+        $name = preg_replace('/Extension$/', '', end($parts)) . 'Extension';
 
-        return $locator . '\\ServiceContainer\\' . end($parts) . 'Extension';
+        return $locator . '\\ServiceContainer\\' . $name;
     }
 
     /**

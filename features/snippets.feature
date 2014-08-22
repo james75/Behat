@@ -86,7 +86,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given /^I should get a '([^']*)':$/
+           * @Then /^I should get a '([^']*)':$/
            */
           public function iShouldGetASuperString($arg1, PyStringNode $string)
           {
@@ -94,7 +94,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given /^I should get a simple string:$/
+           * @Then /^I should get a simple string:$/
            */
           public function iShouldGetASimpleString(PyStringNode $string)
           {
@@ -110,7 +110,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given /^do something undefined with \\(\d+)$/
+           * @When /^do something undefined with \\(\d+)$/
            */
           public function doSomethingUndefinedWith($arg1)
           {
@@ -126,7 +126,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given /^I should get a "([^"]*)":$/
+           * @Then /^I should get a "([^"]*)":$/
            */
           public function iShouldGetA($arg1, PyStringNode $string)
           {
@@ -213,7 +213,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given I should get a :arg1:
+           * @Then I should get a :arg1:
            */
           public function iShouldGetA($arg1, PyStringNode $string)
           {
@@ -221,7 +221,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given I should get a simple string:
+           * @Then I should get a simple string:
            */
           public function iShouldGetASimpleString(PyStringNode $string)
           {
@@ -229,7 +229,7 @@ Feature: Snippets
           }
 
           /**
-           * @Given do something undefined with \:arg1
+           * @When do something undefined with \:arg1
            */
           public function doSomethingUndefinedWith($arg1)
           {
@@ -265,4 +265,35 @@ Feature: Snippets
 
       2 scenarios (2 pending)
       11 steps (2 pending, 9 skipped)
+      """
+
+  Scenario: Numbers with decimal points
+    Given a file named "features/bootstrap/FeatureContext.php" with:
+      """
+      <?php
+
+      use Behat\Behat\Context\SnippetAcceptingContext;
+
+      class FeatureContext implements SnippetAcceptingContext {}
+      """
+    And a file named "features/coffee.feature" with:
+      """
+      Feature: Step Pattern
+        Scenario:
+          Then 5 should have value of £10
+          And 7 should have value of £7.2
+      """
+    When I run "behat -f progress --no-colors --append-snippets"
+    And I run "behat -f pretty --no-colors"
+    Then it should pass with:
+      """
+      Feature: Step Pattern
+
+        Scenario:                         # features/coffee.feature:2
+          Then 5 should have value of £10 # FeatureContext::shouldHaveValueOfPs()
+            TODO: write pending definition
+          And 7 should have value of £7.2 # FeatureContext::shouldHaveValueOfPs()
+
+      1 scenario (1 pending)
+      2 steps (1 pending, 1 skipped)
       """

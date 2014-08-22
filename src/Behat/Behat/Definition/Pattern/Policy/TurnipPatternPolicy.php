@@ -20,6 +20,8 @@ use Behat\Transliterator\Transliterator;
  */
 final class TurnipPatternPolicy implements PatternPolicy
 {
+    const TOKEN_REGEX = "[\"']?(?P<%s>(?<=\")[^\"]+(?=\")|(?<=')[^']+(?=')|(?<=\W|^)\w+(?:[\.\,]\w+)?(?=\W|$))['\"]?";
+
     const PLACEHOLDER_REGEXP = "/\\\:(\w+)/";
     const OPTIONAL_WORD_REGEXP = '/(\s)?\\\\\(([^\\\]+)\\\\\)(\s)?/';
     const ALTERNATIVE_WORD_REGEXP = '/(\w+)\\\\\/(\w+)/';
@@ -30,7 +32,7 @@ final class TurnipPatternPolicy implements PatternPolicy
     private static $placeholderPatterns = array(
         "/(?<=\W|^)\"[^\"]+\"(?=\W|$)/",
         "/(?<=\W|^)'[^']+'(?=\W|$)/",
-        "/(?<=\W|^)\d+(?=\W|$)/"
+        "/(?<=\W|^)\d+(?:[\.\,]\d+)?(?=\W|$)/"
     );
 
     /**
@@ -51,9 +53,7 @@ final class TurnipPatternPolicy implements PatternPolicy
         foreach (self::$placeholderPatterns as $replacePattern) {
             $pattern = preg_replace_callback(
                 $replacePattern,
-                function () use (&$count) {
-                    return ':arg' . ++$count;
-                },
+                function () use (&$count) { return ':arg' . ++$count; },
                 $pattern
             );
         }
@@ -77,25 +77,11 @@ final class TurnipPatternPolicy implements PatternPolicy
     {
         $regex = preg_quote($pattern, '/');
 
-        // placeholder
-        $regex = preg_replace_callback(
-            self::PLACEHOLDER_REGEXP,
-            function ($match) {
-                return sprintf(
-                    "[\"']?(?P<%s>(?<=\")[^\"]+(?=\")|(?<=')[^']+(?=')|(?<=\W)\w+(?=\W|$))['\"]?",
-                    $match[1]
-                );
-            },
-            $regex
-        );
+        $regex = $this->replaceTokensWithRegexCaptureGroups($regex);
+        $regex = $this->replaceTurnipOptionalEndingWithRegex($regex);
+        $regex = $this->replaceTurnipAlternativeWordsWithRegex($regex);
 
-        // optional word
-        $regex = preg_replace(self::OPTIONAL_WORD_REGEXP, '(?:\1)?(?:\2)?(?:\3)?', $regex);
-
-        // alternative word
-        $regex = preg_replace(self::ALTERNATIVE_WORD_REGEXP, '(?:\1|\2)', $regex);
-
-        return '/^' . $regex . '$/';
+        return '/^' . $regex . '$/i';
     }
 
     /**
@@ -113,5 +99,47 @@ final class TurnipPatternPolicy implements PatternPolicy
         $canonicalText = str_replace(' ', '', ucwords($canonicalText));
 
         return $canonicalText;
+    }
+
+    /**
+     * Replaces turnip tokens with regex capture groups.
+     *
+     * @param string $regex
+     *
+     * @return string
+     */
+    private function replaceTokensWithRegexCaptureGroups($regex)
+    {
+        $tokenRegex = self::TOKEN_REGEX;
+
+        return preg_replace_callback(
+            self::PLACEHOLDER_REGEXP,
+            function ($match) use ($tokenRegex) { return sprintf($tokenRegex, $match[1]); },
+            $regex
+        );
+    }
+
+    /**
+     * Replaces turnip optional ending with regex non-capturing optional group.
+     *
+     * @param string $regex
+     *
+     * @return string
+     */
+    private function replaceTurnipOptionalEndingWithRegex($regex)
+    {
+        return preg_replace(self::OPTIONAL_WORD_REGEXP, '(?:\1)?(?:\2)?(?:\3)?', $regex);
+    }
+
+    /**
+     * Replaces turnip alternative words with regex non-capturing alternating group.
+     *
+     * @param string $regex
+     *
+     * @return string
+     */
+    private function replaceTurnipAlternativeWordsWithRegex($regex)
+    {
+        return preg_replace(self::ALTERNATIVE_WORD_REGEXP, '(?:\1|\2)', $regex);
     }
 }

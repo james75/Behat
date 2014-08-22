@@ -1,3 +1,59 @@
+3.0.12 / 2014-07-17
+===================
+
+  * Fix remaining issues with the definition arguments parsing
+  * Introduce `Testwork\Argument` component
+
+3.0.11 / 2014-07-09
+===================
+
+  * Fix argument resolution for functions with default values (thanks @alesblaznik)
+  * Fix step colouring of internationalised definitions
+  * Refactor `ContextFactory` and `RepositorySearchEngine` arguments resolution into the new
+    Testwork component - `ArgumentResolver`
+
+3.0.10 / 2014-06-29
+===================
+
+  * Fix argument resolution when named arguments used and method has defaults (thanks @WouterJ)
+  * Fix support for decimal numbers in turnip placeholders
+
+3.0.9 / 2014-06-20
+==================
+
+  * Fix definition translations reading bug with multi-suite configurations (thanks @WouterJ for reporting)
+  * Fix pretty printer bug with failing background and 2 scenarios (thanks @andytson for reporting)
+  * Fix memory footprint calculation (thanks @dready for reporting)
+
+3.0.8 / 2014-06-06
+==================
+
+  * Profile level Gherkin filters are now overridable by CLI filter options
+  * Rerun cache path is now configurable
+  * Fix turnip-based step definitions starting from token
+  * Fix token-based transformations interfering with regex-based ones
+  * Rerun cache dump have been optimised
+
+3.0.7 / 2014-05-27
+==================
+
+  * Properly generate keywords in snippets for non-english and `And`, `But` steps (thanks @kibao)
+  * Fix regex check bug with transformations that return objects (thanks @vaidasm)
+  * Return ability to use custom formatters by specifiying their class names
+
+3.0.6 / 2014-05-06
+==================
+
+  * Fix a small extension registration shortcut issue introduced in previous release (thanks @FrenkyNet)
+
+3.0.5 / 2014-05-06
+==================
+
+  * Fix a suite initialization bug when suite contexts have arguments
+  * Fix wrong handling of an empty `behat.yml`
+  * Explicitly fail when provided context argument is not supported by constructor
+  * Fix extension registration shortcut for 3rd-part plugins
+
 3.0.4 / 2014-04-29
 ==================
 

@@ -1,14 +1,50 @@
-behat
-=====
+![Behat](https://dl.dropboxusercontent.com/u/282797/behat/behat.png)
 
-[![License](https://poser.pugx.org/behat/behat/license.png)](https://packagist.org/packages/behat/behat)
-[![Build Status](https://travis-ci.org/Behat/Behat.png?branch=master)](https://travis-ci.org/Behat/Behat)
+Behat is a BDD framework for PHP to help you test business expectations.
+
+[![Gitter chat](https://badges.gitter.im/Behat/Behat.png)](https://gitter.im/Behat/Behat)
+[![License](https://poser.pugx.org/behat/behat/license.svg)](https://packagist.org/packages/behat/behat)
+[![Build Status](https://travis-ci.org/Behat/Behat.svg?branch=master)](https://travis-ci.org/Behat/Behat)
 [![HHVM Status](http://hhvm.h4cc.de/badge/behat/behat.png?branch=master)](http://hhvm.h4cc.de/package/behat/behat)
 [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/Behat/Behat/badges/quality-score.png?s=ad84e95fc2405712f88a96d89b4f31dfe5c80fae)](https://scrutinizer-ci.com/g/Behat/Behat/)
-[![Latest Stable Version](https://poser.pugx.org/behat/behat/v/stable.png)](https://packagist.org/packages/behat/behat)
-[![Total Downloads](https://poser.pugx.org/behat/behat/downloads.png)](https://packagist.org/packages/behat/behat)
+[![Total Downloads](https://poser.pugx.org/behat/behat/downloads.svg)](https://packagist.org/packages/behat/behat)
 
-behat is a php framework for testing your business expectations.
+Installing Behat
+----------------
+
+The easiest way to install Behat is by using [Composer](https://getcomposer.org):
+
+```bash
+$> curl -sS https://getcomposer.org/installer | php
+$> php composer.phar require behat/behat='~3.0.6'
+```
+
+After that you'll be able to run Behat via:
+
+```bash
+$> vendor/bin/behat
+```
+
+Installing Development Version
+------------------------------
+
+Clone the repository and install dependencies via [Composer](https://getcomposer.org):
+
+```bash
+$> curl -sS https://getcomposer.org/installer | php
+$> php composer.phar install
+```
+
+After that you will be able to run development version of Behat via:
+
+```bash
+$> bin/behat
+```
+
+Contributing
+------------
+
+Before contributing to Behat, please take a look at the [CONTRIBUTING.md](CONTRIBUTING.md) document.
 
 Versioning
 ----------
@@ -25,25 +61,11 @@ You can read detailed guidance on what BC means in [Symfony2 BC guide](http://sy
 Useful Links
 ------------
 
-- The main website with documentation is at [http://behat.org](http://behat.org)
+- The main website is at [http://behat.org](http://behat.org)
+- The documentation is at [http://behat.readthedocs.org](http://docs.behat.org/en/latest/)
 - Official Google Group is at [http://groups.google.com/group/behat](http://groups.google.com/group/behat)
 - IRC channel on [#freenode](http://freenode.net/) is `#behat`
 - [Note on Patches/Pull Requests](CONTRIBUTING.md)
-
-Installing Dependencies
------------------------
-
-```bash
-$> curl -s https://getcomposer.org/installer | php
-$> php composer.phar install
-```
-
-Running
--------
-
-```bash
-$> bin/behat -h
-```
 
 Contributors
 ------------
