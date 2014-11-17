@@ -98,7 +98,7 @@ Feature: JUnit Formatter
       """
       <?xml version="1.0" encoding="UTF-8"?>
       <testsuites name="default">
-        <testsuite name="World consistency" tests="6" failures="3" errors="2">
+        <testsuite name="World consistency" tests="6" skipped="0" failures="3" errors="2">
           <testcase name="Undefined" status="undefined">
             <error message="And Something new" type="undefined"/>
           </testcase>
@@ -115,6 +115,82 @@ Feature: JUnit Formatter
           <testcase name="Passed &amp; Failed #3" status="failed">
             <failure message="Then I must have 32: Failed asserting that 33 matches expected '32'."/>
           </testcase>
+        </testsuite>
+      </testsuites>
+      """
+    And the file "junit/default.xml" should be a valid document according to "junit.xsd"
+
+  Scenario: Multiple Features
+    Given a file named "features/bootstrap/FeatureContext.php" with:
+    """
+      <?php
+
+      use Behat\Behat\Context\CustomSnippetAcceptingContext,
+          Behat\Behat\Tester\Exception\PendingException;
+
+      class FeatureContext implements CustomSnippetAcceptingContext
+      {
+          private $value;
+
+          public static function getAcceptedSnippetType() { return 'regex'; }
+
+          /**
+           * @Given /I have entered (\d+)/
+           */
+          public function iHaveEntered($num) {
+              $this->value = $num;
+          }
+
+          /**
+           * @Then /I must have (\d+)/
+           */
+          public function iMustHave($num) {
+              PHPUnit_Framework_Assert::assertEquals($num, $this->value);
+          }
+
+          /**
+           * @When /I add (\d+)/
+           */
+          public function iAdd($num) {
+              $this->value += $num;
+          }
+      }
+      """
+    And a file named "features/adding_feature_1.feature" with:
+      """
+      Feature: Adding Feature 1
+        In order to add number together
+        As a mathematician
+        I want, something that acts like a calculator
+
+        Scenario: Adding 4 to 10
+          Given I have entered 10
+          When I add 4
+          Then I must have 14
+      """
+    And a file named "features/adding_feature_2.feature" with:
+      """
+      Feature: Adding Feature 2
+        In order to add number together
+        As a mathematician
+        I want, something that acts like a calculator
+
+        Scenario: Adding 8 to 10
+          Given I have entered 10
+          When I add 8
+          Then I must have 18
+      """
+    And there is a folder named "junit"
+    When I run "behat --no-colors -f junit -o junit"
+    And "junit/default.xml" file xml should be like:
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites name="default">
+        <testsuite name="Adding Feature 1" tests="1" skipped="0" failures="0" errors="0">
+          <testcase name="Adding 4 to 10" status="passed"></testcase>
+        </testsuite>
+        <testsuite name="Adding Feature 2" tests="1" skipped="0" failures="0" errors="0">
+          <testcase name="Adding 8 to 10" status="passed"></testcase>
         </testsuite>
       </testsuites>
       """
@@ -186,7 +262,7 @@ Feature: JUnit Formatter
       """
       <?xml version="1.0" encoding="UTF-8"?>
       <testsuites name="default">
-        <testsuite name="World consistency" tests="2" failures="0" errors="0">
+        <testsuite name="World consistency" tests="2" skipped="0" failures="0" errors="0">
           <testcase name="Adding some interesting value" status="passed"/>
           <testcase name="Subtracting some value" status="passed"/>
         </testsuite>
@@ -311,7 +387,7 @@ Feature: JUnit Formatter
       """
       <?xml version="1.0" encoding="UTF-8"?>
       <testsuites name="small_kid">
-        <testsuite name="Apple Eating" tests="1" failures="0" errors="0">
+        <testsuite name="Apple Eating" tests="1" skipped="0" failures="0" errors="0">
           <testcase name="Eating one apple" status="passed"/>
         </testsuite>
       </testsuites>
@@ -321,7 +397,7 @@ Feature: JUnit Formatter
       """
       <?xml version="1.0" encoding="UTF-8"?>
       <testsuites name="old_man">
-        <testsuite name="Apple Eating" tests="1" failures="1" errors="0">
+        <testsuite name="Apple Eating" tests="1" skipped="0" failures="1" errors="0">
           <testcase name="Eating one apple" status="failed">
             <failure message="Then I will be stronger: Failed asserting that 0 is not equal to 0."/>
           </testcase>
@@ -329,6 +405,67 @@ Feature: JUnit Formatter
       </testsuites>
       """
     And the file "junit/old_man.xml" should be a valid document according to "junit.xsd"
+
+  Scenario: Report skipped testcases
+    Given a file named "features/bootstrap/FeatureContext.php" with:
+    """
+      <?php
+
+      use Behat\Behat\Context\CustomSnippetAcceptingContext,
+          Behat\Behat\Tester\Exception\PendingException;
+
+      class FeatureContext implements CustomSnippetAcceptingContext
+      {
+          private $value;
+
+          public static function getAcceptedSnippetType() { return 'regex'; }
+
+          /**
+           * @BeforeScenario
+           */
+          public function setup() {
+            throw new \Exception();
+          }
+
+          /**
+           * @Given /I have entered (\d+)/
+           * @Then /^I must have (\d+)$/
+           */
+          public function action($num)
+          {
+          }
+      }
+      """
+    And a file named "features/World.feature" with:
+    """
+      Feature: World consistency
+        In order to maintain stable behaviors
+        As a features developer
+        I want, that "World" flushes between scenarios
+
+        Background:
+          Given I have entered 10
+
+        Scenario: Skipped
+          Then I must have 10
+
+        Scenario: Another skipped
+          Then I must have 10
+
+      """
+    And there is a folder named "junit"
+    When I run "behat --no-colors -f junit -o junit"
+    And "junit/default.xml" file xml should be like:
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites name="default">
+        <testsuite name="World consistency" tests="2" skipped="2" failures="0" errors="0">
+          <testcase name="Skipped" status="skipped" />
+          <testcase name="Another skipped" status="skipped" />
+        </testsuite>
+      </testsuites>
+      """
+    And the file "junit/default.xml" should be a valid document according to "junit.xsd"
 
   Scenario: Stop on Failure
     Given a file named "features/bootstrap/FeatureContext.php" with:
@@ -387,7 +524,7 @@ Feature: JUnit Formatter
       """
       <?xml version="1.0" encoding="UTF-8"?>
       <testsuites name="default">
-        <testsuite name="World consistency" tests="1" failures="1" errors="0">
+        <testsuite name="World consistency" tests="1" skipped="0" failures="1" errors="0">
           <testcase name="Failed" status="failed">
             <failure message="Then I must have 13: Failed asserting that 14 matches expected '13'."/>
           </testcase>
