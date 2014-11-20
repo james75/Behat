@@ -28,9 +28,9 @@ final class JUnitListener implements EventListener
 {
 
     /**
-     * @var OutlineNode
+     * @var string[]
      */
-    private $outline;
+    private $outlines = array();
 
     /**
      * @var SuitePrinter
@@ -59,7 +59,7 @@ final class JUnitListener implements EventListener
     }
 
     /**
-     * Captures outline into the ivar on outline BEFORE event.
+     * Stores outline example titles on BEFORE event.
      *
      * @param Event $event
      */
@@ -69,7 +69,15 @@ final class JUnitListener implements EventListener
             return;
         }
 
-        $this->outline = $event->getOutline();
+        $outline = $event->getOutline();
+        $examples = count($outline->getExamples());
+
+        for ($i=1; $i<=$examples; ++$i) {
+            array_push(
+                $this->outlines,
+                $outline->getTitle() . " #" . $i
+            );
+        }
     }
 
     /**
@@ -99,8 +107,8 @@ final class JUnitListener implements EventListener
     /**
      * @return OutlineNode
      */
-    public function getCurrentOutline()
+    public function getNextExampleTitle()
     {
-        return $this->outline;
+        return each($this->outlines)['value'];
     }
 }

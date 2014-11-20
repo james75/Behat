@@ -196,6 +196,89 @@ Feature: JUnit Formatter
       """
     And the file "junit/default.xml" should be a valid document according to "junit.xsd"
 
+  Scenario: Multiple scenario outlines per feature
+    Given a file named "features/bootstrap/FeatureContext.php" with:
+      """
+      <?php
+
+      use Behat\Behat\Context\CustomSnippetAcceptingContext,
+          Behat\Behat\Tester\Exception\PendingException;
+
+      class FeatureContext implements CustomSnippetAcceptingContext
+      {
+          private $value;
+
+          public static function getAcceptedSnippetType() { return 'regex'; }
+
+          /**
+           * @Given /I have entered (\d+)/
+           */
+          public function iHaveEntered($num) {
+              $this->value = $num;
+          }
+
+          /**
+           * @Then /I must have (\d+)/
+           */
+          public function iMustHave($num) {
+              PHPUnit_Framework_Assert::assertEquals($num, $this->value);
+          }
+
+          /**
+           * @When /I add (\d+)/
+           */
+          public function iAdd($num) {
+              $this->value += $num;
+          }
+      }
+      """
+    And a file named "features/World.feature" with:
+      """
+      Feature: Adding numbers
+        In order to add number together
+        As a mathematician
+        I want, something that acts like a calculator
+
+        Scenario Outline: Adding two numbers
+          Given I have entered <value 1>
+          When I add <value 2>
+          Then I must have <value 3>
+
+          Examples:
+            | value 1 | value 2 | value 3 |
+            | 10      | 3       | 13      |
+            | 1       | 2       | 3       |
+
+        Scenario Outline: Adding three numbers
+          Given I have entered <value 1>
+          When I add <value 2>
+          And I add <value 3>
+          Then I must have <value 4>
+
+          Examples:
+            | value 1 | value 2 | value 3 | value 4 |
+            | 8       | 3       | 5       | 16      |
+            | 10      | 7       | 3       | 20      |
+            | 1       | 23      | 1       | 25      |
+      """
+    And there is a folder named "junit"
+    When I run "behat --no-colors -f junit -o junit"
+    Then it should pass with no output
+    And "junit/default.xml" file xml should be like:
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites name="default">
+        <testsuite name="Adding numbers" tests="5" skipped="0" failures="0" errors="0">
+          <testcase name="Adding two numbers #1" status="passed"/>
+          <testcase name="Adding two numbers #2" status="passed"/>
+          <testcase name="Adding three numbers #1" status="passed"/>
+          <testcase name="Adding three numbers #2" status="passed"/>
+          <testcase name="Adding three numbers #3" status="passed"/>
+        </testsuite>
+      </testsuites>
+      """
+    And the file "junit/default.xml" should be a valid document according to "junit.xsd"
+
   Scenario: Multiline titles
     Given a file named "features/bootstrap/FeatureContext.php" with:
       """

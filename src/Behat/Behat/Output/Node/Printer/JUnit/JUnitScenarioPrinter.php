@@ -64,7 +64,7 @@ final class JUnitScenarioPrinter implements ScenarioElementPrinter
         }, explode("\n", $scenario->getTitle())));
 
         if ($scenario instanceof ExampleNode) {
-            $name = $this->buildExampleName();
+            $name = $this->junitListener->getNextExampleTitle();
         }
 
         /** @var JUnitOutputPrinter $outputPrinter */
@@ -81,22 +81,5 @@ final class JUnitScenarioPrinter implements ScenarioElementPrinter
      */
     public function printCloseTag(Formatter $formatter)
     {
-    }
-
-    /**
-     * @return string
-     */
-    private function buildExampleName()
-    {
-        $currentOutline = $this->junitListener->getCurrentOutline();
-        if ($currentOutline === $this->lastOutline) {
-            $this->outlineStepCount++;
-        } else {
-            $this->lastOutline = $currentOutline;
-            $this->outlineStepCount = 1;
-        }
-
-        $name = $currentOutline->getTitle() . ' #' . $this->outlineStepCount;
-        return $name;
     }
 }
